@@ -1,4 +1,5 @@
 FROM golang:1.17.2-alpine3.14
+RUN go install github.com/golang/mock/mockgen@v1.6.0
 
 ARG app_dir="/app"
 
