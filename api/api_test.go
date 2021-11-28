@@ -8,12 +8,12 @@ import (
 )
 
 func Test_Initialize(t *testing.T) {
-	a, _ := NewApi("http://example.com")
+	a, _ := NewSingleApi("http://example.com")
 	assert.Equal(t, true, a.GetResult() == nil)
 }
 
 func Test_CreateRequest(t *testing.T) {
-	a, _ := NewApi("http://example.com")
+	a, _ := NewSingleApi("http://example.com")
 	req, _ := a.createRequest(nil)
 	dump, _ := httputil.DumpRequestOut(req, true)
 	e := "POST / HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Go-http-client/1.1\r\nContent-Length: 0\r\nContent-Type: application/json\r\nAccept-Encoding: gzip\r\n\r\n"
@@ -26,7 +26,7 @@ type TestRequestBody struct {
 }
 
 func Test_CreateJsonPostRequest(t *testing.T) {
-	a, _ := NewApi("http://example.com")
+	a, _ := NewSingleApi("http://example.com")
 	s := TestRequestBody{
 		Id:   1,
 		Name: "aaaa",
@@ -38,7 +38,7 @@ func Test_CreateJsonPostRequest(t *testing.T) {
 }
 
 func Test_GetResult(t *testing.T) {
-	a, _ := NewApi("http://mock.example.com")
+	a, _ := NewSingleApi("http://mock.example.com")
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	httpmock.RegisterResponder("POST", "http://mock.example.com",

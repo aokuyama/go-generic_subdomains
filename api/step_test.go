@@ -7,15 +7,15 @@ import (
 	//"fmt"
 )
 
-func initStep() *Step {
-	s := NewStep(
+func initStep() *StepApi {
+	s := NewStepApi(
 		"http://start.mock.example.com",
 		"http://describe.mock.example.com",
 	)
 	return s
 }
 
-func setStarted(s *Step) {
+func setStarted(s *StepApi) {
 	result := []byte("{\"executionArn\":\"arn:aws:states:ap-northeast-1:xxxx:xxxx:xxxx:1234\",\"startDate\":1.627105289676E9}")
 	s.StartApi.result = &result
 }

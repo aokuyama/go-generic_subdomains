@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type Api struct {
+type SingleApi struct {
 	TimeOut     int
 	Method      string
 	ContentType string
@@ -19,12 +19,12 @@ type Api struct {
 	result      *[]byte
 }
 
-func NewApi(u string) (*Api, error) {
+func NewSingleApi(u string) (*SingleApi, error) {
 	up, err := url.Parse(u)
 	if err != nil {
 		return nil, err
 	}
-	s := Api{
+	s := SingleApi{
 		TimeOut:     10,
 		Method:      "POST",
 		ContentType: "application/json",
@@ -33,7 +33,7 @@ func NewApi(u string) (*Api, error) {
 	return &s, nil
 }
 
-func (a *Api) Do(body interface{}) error {
+func (a *SingleApi) Do(body interface{}) error {
 	client := &http.Client{}
 	client.Timeout = time.Second * time.Duration(a.TimeOut)
 	var err error
@@ -57,7 +57,7 @@ func (a *Api) Do(body interface{}) error {
 	return nil
 }
 
-func (a *Api) createRequest(body interface{}) (*http.Request, error) {
+func (a *SingleApi) createRequest(body interface{}) (*http.Request, error) {
 	var b io.Reader
 	if body == nil {
 		b = nil
@@ -75,10 +75,10 @@ func (a *Api) createRequest(body interface{}) (*http.Request, error) {
 	return req, err
 }
 
-func (a *Api) GetResult() *[]byte {
+func (a *SingleApi) GetResult() *[]byte {
 	return a.result
 }
 
-func (a *Api) isCompleted() bool {
+func (a *SingleApi) isCompleted() bool {
 	return a.GetResult() != nil
 }

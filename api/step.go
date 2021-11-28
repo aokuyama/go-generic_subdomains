@@ -6,21 +6,21 @@ import (
 	"time"
 )
 
-type Step struct {
+type StepApi struct {
 	IntervalSecFirst int
 	IntervalSec      int
 	next_call        *time.Time
 	count_wait       int
 	result           *[]byte
-	StartApi         *Api
-	DescribeApi      *Api
+	StartApi         *SingleApi
+	DescribeApi      *SingleApi
 }
 
-func NewStep(start_url string, describe_url string) *Step {
-	start, _ := NewApi(start_url)
-	describe, _ := NewApi(describe_url)
+func NewStepApi(start_url string, describe_url string) *StepApi {
+	start, _ := NewSingleApi(start_url)
+	describe, _ := NewSingleApi(describe_url)
 
-	s := Step{
+	s := StepApi{
 		IntervalSecFirst: 30,
 		IntervalSec:      10,
 		next_call:        nil,
@@ -31,7 +31,7 @@ func NewStep(start_url string, describe_url string) *Step {
 	return &s
 }
 
-func (s *Step) Do(body interface{}) error {
+func (s *StepApi) Do(body interface{}) error {
 	var err error
 	err = s.doStartApi(body)
 	if err != nil {
@@ -52,24 +52,24 @@ func (s *Step) Do(body interface{}) error {
 	return nil
 }
 
-func (s *Step) GetResult() *[]byte {
+func (s *StepApi) GetResult() *[]byte {
 	return s.DescribeApi.GetResult()
 }
 
-func (s *Step) GetJson() interface{} {
+func (s *StepApi) GetJson() interface{} {
 	var jsonObj DescribeResponse
 	_ = json.Unmarshal(*s.GetResult(), &jsonObj)
 	return jsonObj.Output
 }
 
-func (s *Step) doStartApi(body interface{}) error {
+func (s *StepApi) doStartApi(body interface{}) error {
 	if s.StartApi.isCompleted() {
 		return errors.New("startの二重実行")
 	}
 	return s.StartApi.Do(body)
 }
 
-func (s *Step) getDescribeKey() (*string, error) {
+func (s *StepApi) getDescribeKey() (*string, error) {
 	if !s.StartApi.isCompleted() {
 		return nil, errors.New("startの実行前")
 	}
@@ -81,7 +81,7 @@ func (s *Step) getDescribeKey() (*string, error) {
 	return &jsonObj.ExecutionArn, nil
 }
 
-func (s *Step) doDescribeApi() error {
+func (s *StepApi) doDescribeApi() error {
 	key, err := s.getDescribeKey()
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (s *Step) doDescribeApi() error {
 	return s.DescribeApi.Do(dr)
 }
 
-func (s *Step) isStepApiCompleted() bool {
+func (s *StepApi) isStepApiCompleted() bool {
 	if !s.DescribeApi.isCompleted() {
 		return false
 	}
