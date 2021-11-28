@@ -16,10 +16,10 @@ func NewDescribeRequest(a string) *DescribeRequest {
 }
 
 type DescribeResponse struct {
-	Status string      `json:"status"`
-	Output interface{} `json:"output"`
+	Status string `json:"status"`
+	Output string `json:"output"`
 }
 
-func (r *DescribeResponse) isCompleted() bool {
+func (r *DescribeResponse) IsCompleted() bool {
 	return r.Status == "SUCCEEDED" || r.Status == "FAILED"
 }

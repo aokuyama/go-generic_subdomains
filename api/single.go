@@ -79,6 +79,6 @@ func (a *SingleApi) GetResult() *[]byte {
 	return a.result
 }
 
-func (a *SingleApi) isCompleted() bool {
+func (a *SingleApi) IsCompleted() bool {
 	return a.GetResult() != nil
 }

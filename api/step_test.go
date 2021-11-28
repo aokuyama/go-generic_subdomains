@@ -4,20 +4,25 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	//"fmt"
 )
 
 func initStep() *StepApi {
+	start, _ := NewSingleApi("http://start.mock.example.com")
+	describe, _ := NewSingleApi("http://describe.mock.example.com")
 	s := NewStepApi(
-		"http://start.mock.example.com",
-		"http://describe.mock.example.com",
+		start,
+		describe,
 	)
+	s.IntervalSec = 0
+	s.IntervalSecFirst = 0
 	return s
 }
 
 func setStarted(s *StepApi) {
+	start, _ := NewSingleApi("http://start.mock.example.com")
 	result := []byte("{\"executionArn\":\"arn:aws:states:ap-northeast-1:xxxx:xxxx:xxxx:1234\",\"startDate\":1.627105289676E9}")
-	s.StartApi.result = &result
+	start.result = &result
+	s.StartApi = start
 }
 
 func Test_startApi(t *testing.T) {
@@ -78,7 +83,7 @@ func Test_DoDescribeApi(t *testing.T) {
 
 func Test_DoDescribeResult(t *testing.T) {
 	s := initStep()
-	assert.Equal(t, false, s.isStepApiCompleted(), "実行前")
+	assert.Equal(t, false, s.IsCompleted(), "実行前")
 	setStarted(s)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
@@ -86,20 +91,37 @@ func Test_DoDescribeResult(t *testing.T) {
 		httpmock.NewStringResponder(200, "mocked describe api"),
 	)
 	s.doDescribeApi()
-	assert.Equal(t, false, s.isStepApiCompleted(), "statusが含まれない場合")
+	assert.Equal(t, false, s.IsCompleted(), "statusが含まれない場合")
 	httpmock.RegisterResponder("POST", "http://describe.mock.example.com",
 		httpmock.NewStringResponder(200, "{\"status\":\"SUCCEEDED\"}"),
 	)
 	s.doDescribeApi()
-	assert.Equal(t, true, s.isStepApiCompleted(), "成功した場合")
+	assert.Equal(t, true, s.IsCompleted(), "成功した場合")
 	httpmock.RegisterResponder("POST", "http://describe.mock.example.com",
 		httpmock.NewStringResponder(200, "{\"status\":\"PENDING\"}"),
 	)
 	s.doDescribeApi()
-	assert.Equal(t, false, s.isStepApiCompleted(), "継続中の場合")
+	assert.Equal(t, false, s.IsCompleted(), "継続中の場合")
 	httpmock.RegisterResponder("POST", "http://describe.mock.example.com",
 		httpmock.NewStringResponder(200, "{\"status\":\"FAILED\"}"),
 	)
 	s.doDescribeApi()
-	assert.Equal(t, true, s.isStepApiCompleted(), "失敗した場合")
+	assert.Equal(t, true, s.IsCompleted(), "失敗した場合")
+}
+
+func TestGetResult(t *testing.T) {
+	s := initStep()
+	setStarted(s)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	httpmock.RegisterResponder("POST", "http://start.mock.example.com",
+		httpmock.NewStringResponder(200, "{\"executionArn\":\"arn:aws:states:ap-northeast-1:xxxx:xxxx:xxxx:1234\",\"startDate\":1.627105289676E9}"),
+	)
+	result := `{"executionArn":"arn:aws:states:ap-northeast-1:xxxx:xxxx:xxxx:1234","input":"{\"param\":\"a\"}","output":"{\"error\": 0, \"list\": [{\"date\": \"2021-12-29\", \"value\": \"1234\"}, {\"date\": \"2021-12-27\", \"value\": \"abcd\"}]}","status":"SUCCEEDED"}`
+	httpmock.RegisterResponder("POST", "http://describe.mock.example.com",
+		httpmock.NewStringResponder(200, result),
+	)
+	s.Do(nil)
+	equal := `{"error": 0, "list": [{"date": "2021-12-29", "value": "1234"}, {"date": "2021-12-27", "value": "abcd"}]}`
+	assert.Equal(t, equal, string(*s.GetResult()), "statusが含まれない場合")
 }

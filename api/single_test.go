@@ -44,8 +44,8 @@ func Test_GetResult(t *testing.T) {
 	httpmock.RegisterResponder("POST", "http://mock.example.com",
 		httpmock.NewStringResponder(200, "mocked"),
 	)
-	assert.Equal(t, false, a.isCompleted())
+	assert.Equal(t, false, a.IsCompleted())
 	a.Do(nil)
 	assert.Equal(t, "mocked", string(*a.GetResult()))
-	assert.Equal(t, true, a.isCompleted())
+	assert.Equal(t, true, a.IsCompleted())
 }

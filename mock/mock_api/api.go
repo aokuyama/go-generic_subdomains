@@ -60,3 +60,17 @@ func (mr *MockApiMockRecorder) GetResult() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResult", reflect.TypeOf((*MockApi)(nil).GetResult))
 }
+
+// IsCompleted mocks base method.
+func (m *MockApi) IsCompleted() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsCompleted")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsCompleted indicates an expected call of IsCompleted.
+func (mr *MockApiMockRecorder) IsCompleted() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCompleted", reflect.TypeOf((*MockApi)(nil).IsCompleted))
+}

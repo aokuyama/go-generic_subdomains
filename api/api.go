@@ -4,4 +4,5 @@ package api
 type Api interface {
 	Do(body interface{}) error
 	GetResult() *[]byte
+	IsCompleted() bool
 }

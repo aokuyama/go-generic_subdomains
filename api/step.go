@@ -12,14 +12,11 @@ type StepApi struct {
 	next_call        *time.Time
 	count_wait       int
 	result           *[]byte
-	StartApi         *SingleApi
-	DescribeApi      *SingleApi
+	StartApi         Api
+	DescribeApi      Api
 }
 
-func NewStepApi(start_url string, describe_url string) *StepApi {
-	start, _ := NewSingleApi(start_url)
-	describe, _ := NewSingleApi(describe_url)
-
+func NewStepApi(start Api, describe Api) *StepApi {
 	s := StepApi{
 		IntervalSecFirst: 30,
 		IntervalSec:      10,
@@ -33,7 +30,9 @@ func NewStepApi(start_url string, describe_url string) *StepApi {
 
 func (s *StepApi) Do(body interface{}) error {
 	var err error
-	err = s.doStartApi(body)
+	if !s.StartApi.IsCompleted() {
+		err = s.doStartApi(body)
+	}
 	if err != nil {
 		return err
 	}
@@ -45,7 +44,7 @@ func (s *StepApi) Do(body interface{}) error {
 			return err
 		}
 		s.setCallTime(s.Now())
-		if s.isStepApiCompleted() {
+		if s.IsCompleted() {
 			return nil
 		}
 	}
@@ -53,24 +52,24 @@ func (s *StepApi) Do(body interface{}) error {
 }
 
 func (s *StepApi) GetResult() *[]byte {
-	return s.DescribeApi.GetResult()
-}
-
-func (s *StepApi) GetJson() interface{} {
-	var jsonObj DescribeResponse
-	_ = json.Unmarshal(*s.GetResult(), &jsonObj)
-	return jsonObj.Output
+	var dr DescribeResponse
+	err := json.Unmarshal(*s.DescribeApi.GetResult(), &dr)
+	if err != nil {
+		panic(err)
+	}
+	b := []byte(dr.Output)
+	return &b
 }
 
 func (s *StepApi) doStartApi(body interface{}) error {
-	if s.StartApi.isCompleted() {
+	if s.StartApi.IsCompleted() {
 		return errors.New("startの二重実行")
 	}
 	return s.StartApi.Do(body)
 }
 
 func (s *StepApi) getDescribeKey() (*string, error) {
-	if !s.StartApi.isCompleted() {
+	if !s.StartApi.IsCompleted() {
 		return nil, errors.New("startの実行前")
 	}
 	var jsonObj StartApiResponse
@@ -90,11 +89,11 @@ func (s *StepApi) doDescribeApi() error {
 	return s.DescribeApi.Do(dr)
 }
 
-func (s *StepApi) isStepApiCompleted() bool {
-	if !s.DescribeApi.isCompleted() {
+func (s *StepApi) IsCompleted() bool {
+	if !s.DescribeApi.IsCompleted() {
 		return false
 	}
 	var dr DescribeResponse
 	json.Unmarshal(*s.DescribeApi.GetResult(), &dr)
-	return dr.isCompleted()
+	return dr.IsCompleted()
 }
