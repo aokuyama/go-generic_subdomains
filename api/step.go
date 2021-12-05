@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -36,6 +37,11 @@ func (s *StepApi) Do(body interface{}) error {
 	if err != nil {
 		return err
 	}
+	key, err := s.getDescribeKey()
+	if err != nil {
+		return err
+	}
+	fmt.Println("start succeeded. key:", *key)
 	s.setFirstCallTime(s.Now())
 	for {
 		s.waitForNext(s.Now())
@@ -43,11 +49,18 @@ func (s *StepApi) Do(body interface{}) error {
 		if err != nil {
 			return err
 		}
+		if !s.IsDescribeResponse() {
+			return errors.New("Failed describe.")
+		}
 		s.setCallTime(s.Now())
 		if s.IsCompleted() {
-			return nil
+			break
 		}
 	}
+	if !s.IsSucceeded() {
+		return errors.New("Failed Step API")
+	}
+	fmt.Println("describe succeeded.")
 	return nil
 }
 
@@ -77,7 +90,11 @@ func (s *StepApi) getDescribeKey() (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &jsonObj.ExecutionArn, nil
+	if len(jsonObj.ExecutionArn) == 0 {
+		return nil, errors.New("キーの取得失敗")
+	}
+	key := jsonObj.ExecutionArn
+	return &key, nil
 }
 
 func (s *StepApi) doDescribeApi() error {
@@ -96,4 +113,22 @@ func (s *StepApi) IsCompleted() bool {
 	var dr DescribeResponse
 	json.Unmarshal(*s.DescribeApi.GetResult(), &dr)
 	return dr.IsCompleted()
+}
+
+func (s *StepApi) IsSucceeded() bool {
+	if !s.DescribeApi.IsCompleted() {
+		return false
+	}
+	var dr DescribeResponse
+	json.Unmarshal(*s.DescribeApi.GetResult(), &dr)
+	return dr.IsSucceeded()
+}
+
+func (s *StepApi) IsDescribeResponse() bool {
+	if !s.DescribeApi.IsCompleted() {
+		return false
+	}
+	var dr DescribeResponse
+	json.Unmarshal(*s.DescribeApi.GetResult(), &dr)
+	return dr.IsDescribeResponse()
 }
