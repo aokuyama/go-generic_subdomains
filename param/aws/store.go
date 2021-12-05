@@ -23,7 +23,7 @@ func NewStore(region string) *Store {
 func (s *Store) GetValue(key string) (*string, error) {
 	res, err := s.ssm.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(key),
-		WithDecryption: aws.Bool(false),
+		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, err
