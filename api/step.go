@@ -39,6 +39,7 @@ func (s *StepApi) Do(body interface{}) error {
 	}
 	key, err := s.getDescribeKey()
 	if err != nil {
+		fmt.Println("failed start. response:", (string)(*s.StartApi.GetResult()))
 		return err
 	}
 	fmt.Println("start succeeded. key:", *key)
@@ -50,6 +51,7 @@ func (s *StepApi) Do(body interface{}) error {
 			return err
 		}
 		if !s.IsDescribeResponse() {
+			fmt.Println("failed describe. response:", (string)(*s.DescribeApi.GetResult()))
 			return errors.New("Failed describe.")
 		}
 		s.setCallTime(s.Now())
@@ -58,6 +60,7 @@ func (s *StepApi) Do(body interface{}) error {
 		}
 	}
 	if !s.IsSucceeded() {
+		fmt.Println("failed api. response:", (string)(*s.DescribeApi.GetResult()))
 		return errors.New("Failed Step API")
 	}
 	fmt.Println("describe succeeded.")
