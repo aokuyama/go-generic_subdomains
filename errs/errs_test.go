@@ -23,6 +23,16 @@ func TestAppendErrMessage(t *testing.T) {
 	assert.Equal(t, "123\nabc\n", errs.Err().Error())
 }
 
+func TestAppendErrMessage2(t *testing.T) {
+	var err error
+	errs := New()
+	err = errors.New("123")
+	errs.Append(err)
+	err = errors.New("abc")
+	errs.Append(err)
+	assert.Equal(t, "123\nabc\n", errs.Err().Error())
+}
+
 func TestAppendNil(t *testing.T) {
 	errs := New()
 	errs.Append(nil)
