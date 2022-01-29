@@ -22,30 +22,30 @@ func NewSsm(region string) *Ssm {
 	return &c
 }
 
-func (s *Ssm) GetValue(key string) (*string, error) {
+func (s *Ssm) GetValue(key string) (string, error) {
 	res, err := s.ssm.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(key),
 		WithDecryption: aws.Bool(true),
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	value := res.Parameter.Value
-	return value, nil
+	return *value, nil
 }
 
-func (s *Ssm) GetValueIfKey(value string) (*string, error) {
+func (s *Ssm) ConvertValue(value string) (string, error) {
 	key := s.parseStoreKey(value)
-	if key == nil {
-		return nil, nil
+	if len(key) == 0 {
+		return value, nil
 	}
-	return s.GetValue(*key)
+	return s.GetValue(key)
 }
 
-func (s *Ssm) parseStoreKey(v string) *string {
+func (s *Ssm) parseStoreKey(v string) string {
 	if strings.HasPrefix(v, "#SSM#") {
 		r := string([]rune(v)[5:])
-		return &r
+		return r
 	}
-	return nil
+	return ""
 }

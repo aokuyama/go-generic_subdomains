@@ -20,7 +20,7 @@ func NewKms(region string) *Kms {
 	return &s
 }
 
-func (s *Kms) GetValue(v string) (*string, error) {
+func (s *Kms) GetValue(v string) (string, error) {
 	data, _ := base64.StdEncoding.DecodeString(v)
 
 	input := &kms.DecryptInput{
@@ -28,25 +28,24 @@ func (s *Kms) GetValue(v string) (*string, error) {
 	}
 	result, err := s.svc.Decrypt(input)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	text, _ := base64.StdEncoding.DecodeString(base64.StdEncoding.EncodeToString(result.Plaintext))
-	str := string(text)
-	return &str, nil
+	return string(text), nil
 }
 
-func (s *Kms) GetValueIfKey(value string) (*string, error) {
+func (s *Kms) ConvertValue(value string) (string, error) {
 	key := s.parseEncrypted(value)
-	if key == nil {
-		return nil, nil
+	if len(key) == 0 {
+		return value, nil
 	}
-	return s.GetValue(*key)
+	return s.GetValue(key)
 }
 
-func (s *Kms) parseEncrypted(v string) *string {
+func (s *Kms) parseEncrypted(v string) string {
 	if strings.HasPrefix(v, "#KMS#") {
 		r := string([]rune(v)[5:])
-		return &r
+		return r
 	}
-	return nil
+	return ""
 }
