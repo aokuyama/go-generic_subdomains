@@ -1,17 +1,19 @@
 package aws
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 )
 
-type Store struct {
+type Ssm struct {
 	ssm *ssm.SSM
 }
 
-func NewStore(region string) *Store {
-	c := Store{}
+func NewSsm(region string) *Ssm {
+	c := Ssm{}
 	se := session.Must(session.NewSession())
 	c.ssm = ssm.New(
 		se,
@@ -20,7 +22,7 @@ func NewStore(region string) *Store {
 	return &c
 }
 
-func (s *Store) GetValue(key string) (*string, error) {
+func (s *Ssm) GetValue(key string) (*string, error) {
 	res, err := s.ssm.GetParameter(&ssm.GetParameterInput{
 		Name:           aws.String(key),
 		WithDecryption: aws.Bool(true),
@@ -30,4 +32,20 @@ func (s *Store) GetValue(key string) (*string, error) {
 	}
 	value := res.Parameter.Value
 	return value, nil
+}
+
+func (s *Ssm) GetValueIfKey(value string) (*string, error) {
+	key := s.parseStoreKey(value)
+	if key == nil {
+		return nil, nil
+	}
+	return s.GetValue(*key)
+}
+
+func (s *Ssm) parseStoreKey(v string) *string {
+	if strings.HasPrefix(v, "#SSM#") {
+		r := string([]rune(v)[5:])
+		return &r
+	}
+	return nil
 }

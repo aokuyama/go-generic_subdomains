@@ -1,41 +1,34 @@
 package param
 
 import (
-	"github.com/aokuyama/go-generic_subdomains/param/aws"
 	"os"
-	"strings"
+
+	"github.com/aokuyama/go-generic_subdomains/param/aws"
 )
 
 type Store interface {
 	GetValue(key string) (*string, error)
+	GetValueIfKey(value string) (*string, error)
 }
 
-var store Store
+var ssm Store
+var kms Store
 
 func Getenv(s string) string {
 	env := os.Getenv(s)
-	if store == nil {
-		store = aws.NewStore("ap-northeast-1")
+	if ssm == nil {
+		ssm = aws.NewSsm("ap-northeast-1")
 	}
-	return replaceValue(env, store)
-}
-
-func replaceValue(s string, store Store) string {
-	key := parseStoreKey(s)
-	if key == nil {
-		return s
-	}
-	value, err := store.GetValue(*key)
+	value, err := ssm.GetValueIfKey(env)
 	if err != nil {
 		panic(err)
 	}
-	return *value
-}
-
-func parseStoreKey(s string) *string {
-	if strings.HasPrefix(s, "#SSM#") {
-		r := string([]rune(s)[5:])
-		return &r
+	if kms == nil {
+		kms = aws.NewKms("ap-northeast-1")
 	}
-	return nil
+	value2, err := kms.GetValueIfKey(*value)
+	if err != nil {
+		panic(err)
+	}
+	return *value2
 }
