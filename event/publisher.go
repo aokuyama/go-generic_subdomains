@@ -3,7 +3,7 @@ package event
 import "github.com/aokuyama/go-generic_subdomains/errs"
 
 type Publisher struct {
-	subsclibers []Subscriber
+	subscribers []Subscriber
 }
 
 func NewPublisher() *Publisher {
@@ -12,12 +12,12 @@ func NewPublisher() *Publisher {
 }
 
 func (p *Publisher) Regist(s ...Subscriber) {
-	p.subsclibers = append(p.subsclibers, s...)
+	p.subscribers = append(p.subscribers, s...)
 }
 
 func (p *Publisher) Publish(e Event) error {
 	errs := errs.New()
-	for _, s := range p.subsclibers {
+	for _, s := range p.subscribers {
 		errs.Append(p.delivery(s, e))
 	}
 	return errs.Err()
