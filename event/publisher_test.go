@@ -12,8 +12,8 @@ func TestPublish(t *testing.T) {
 	subb := SubscriberB{}
 	subw := SubscriberW{}
 	pub := NewPublisher()
-	pub.Regist(&suba)
-	pub.Regist(&subb, &subw)
+	pub.Register(&suba)
+	pub.Register(&subb, &subw)
 	e1 := ExecOrderEvent{}
 	assert.Equal(t, 0, suba.Count())
 	assert.Equal(t, 0, subb.Count())

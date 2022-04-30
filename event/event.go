@@ -11,10 +11,14 @@ type Event interface {
 }
 
 func IsSubscribe(s Subscriber, e Event) bool {
-	subscribe_type := reflect.TypeOf(s.Type())
+	st := s.Type()
+	subscribe_type := reflect.TypeOf(st)
 	event_type := reflect.TypeOf(e)
 	if subscribe_type.String() == "string" {
-		v := reflect.ValueOf(s.Type())
+		v := reflect.ValueOf(st)
+		if v.String() == "" {
+			return false
+		}
 		r := regexp.MustCompile(v.String())
 		return r.MatchString(event_type.String())
 	}

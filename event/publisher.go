@@ -11,7 +11,7 @@ func NewPublisher() *Publisher {
 	return &p
 }
 
-func (p *Publisher) Regist(s ...Subscriber) {
+func (p *Publisher) Register(s ...Subscriber) {
 	p.subscribers = append(p.subscribers, s...)
 }
 

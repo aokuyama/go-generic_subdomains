@@ -66,6 +66,20 @@ func (s *SubscriberW) Count() int {
 	return s.count
 }
 
+type SubscriberN struct {
+	count int
+}
+
+func (s *SubscriberN) Type() interface{} {
+	return ""
+}
+func (s *SubscriberN) Subscribe(e Event) error {
+	return nil
+}
+func (s *SubscriberN) Count() int {
+	return s.count
+}
+
 func TestIsSubscribe(t *testing.T) {
 	assert.True(t, IsSubscribe(&SubscriberA{}, &ExecOrderEvent{}))
 	assert.False(t, IsSubscribe(&SubscriberA{}, &GetResultEvent{}))
@@ -73,4 +87,6 @@ func TestIsSubscribe(t *testing.T) {
 	assert.True(t, IsSubscribe(&SubscriberB{}, &GetResultEvent{}))
 	assert.True(t, IsSubscribe(&SubscriberW{}, &ExecOrderEvent{}))
 	assert.True(t, IsSubscribe(&SubscriberW{}, &GetResultEvent{}))
+	assert.False(t, IsSubscribe(&SubscriberN{}, &ExecOrderEvent{}))
+	assert.False(t, IsSubscribe(&SubscriberN{}, &GetResultEvent{}))
 }
