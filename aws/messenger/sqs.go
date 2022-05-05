@@ -18,10 +18,11 @@ func New(url string) (*AwsSqs, error) {
 	return &AwsSqs{client: sqs.New(se), url: url}, nil
 }
 
-func (s *AwsSqs) Send(msg string) (*string, error) {
+func (s *AwsSqs) Publish(body string, group_id string) (*string, error) {
 	smi := sqs.SendMessageInput{
-		QueueUrl:    &s.url,
-		MessageBody: &msg,
+		QueueUrl:       &s.url,
+		MessageBody:    &body,
+		MessageGroupId: &group_id,
 	}
 	smo, err := s.client.SendMessage(&smi)
 	if err != nil {
