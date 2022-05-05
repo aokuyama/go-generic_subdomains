@@ -77,6 +77,10 @@ func (s *StepApi) GetResult() *[]byte {
 	return &b
 }
 
+func (s *StepApi) GetStatusCode() int {
+	return 0
+}
+
 func (s *StepApi) doStartApi(body interface{}) error {
 	if s.StartApi.IsCompleted() {
 		return errors.New("startの二重実行")

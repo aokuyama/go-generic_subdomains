@@ -17,6 +17,7 @@ type SingleApi struct {
 	XApiKey     string
 	url         url.URL
 	result      *[]byte
+	statusCode  int
 }
 
 func NewSingleApi(u string) (*SingleApi, error) {
@@ -54,6 +55,7 @@ func (a *SingleApi) Do(body interface{}) error {
 		return err
 	}
 	a.result = &r
+	a.statusCode = res.StatusCode
 	return nil
 }
 
@@ -77,6 +79,10 @@ func (a *SingleApi) createRequest(body interface{}) (*http.Request, error) {
 
 func (a *SingleApi) GetResult() *[]byte {
 	return a.result
+}
+
+func (a *SingleApi) GetStatusCode() int {
+	return a.statusCode
 }
 
 func (a *SingleApi) IsCompleted() bool {
