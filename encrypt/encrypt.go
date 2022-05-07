@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"errors"
 )
 
 type Encrypt struct {
@@ -39,6 +40,12 @@ func (e *Encrypt) Decrypt(v string) (*string, error) {
 	}
 	decrypted := make([]byte, len(data))
 	dec := cipher.NewCBCDecrypter(e.cb, e.iv)
+	if len(decrypted)%dec.BlockSize() != 0 {
+		return nil, errors.New("crypto/cipher: input not full blocks")
+	}
+	if len(decrypted) < len(data) {
+		return nil, errors.New("crypto/cipher: output smaller than input")
+	}
 	dec.CryptBlocks(decrypted, data)
 	d := string(e.unPadding(decrypted))
 	return &d, nil
