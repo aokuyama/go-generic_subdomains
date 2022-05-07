@@ -27,9 +27,23 @@ func TestDecrypt(t *testing.T) {
 	assert.Equal(t, equal1, d(e, str1))
 	assert.Equal(t, equal2, d(e, str2))
 	assert.Equal(t, equal1, d(e, e.Encrypt(equal1)))
+	_, err := e.Decrypt("aaa")
+	assert.Error(t, err)
 }
 
 func d(e *Encrypt, v string) string {
 	s, _ := e.Decrypt(v)
 	return *s
+}
+
+func TestDecryptSafe(t *testing.T) {
+	iv := []byte{0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01}
+	e, _ := New("zJBJiWynHikysSzGEC6cDTXzcDJxW5fT", iv)
+	equal := "aaa"
+	_, err := e.Decrypt(equal)
+	assert.Error(t, err)
+	s := e.DecryptSafe(equal)
+	assert.Equal(t, equal, s)
+	en := e.Encrypt("abc")
+	assert.Equal(t, d(e, en), e.DecryptSafe(en))
 }

@@ -44,6 +44,14 @@ func (e *Encrypt) Decrypt(v string) (*string, error) {
 	return &d, nil
 }
 
+func (e *Encrypt) DecryptSafe(v string) string {
+	s, err := e.Decrypt(v)
+	if err != nil {
+		return v
+	}
+	return *s
+}
+
 func (e *Encrypt) padding(data []byte) []byte {
 	length := aes.BlockSize - (len(data) % aes.BlockSize)
 	trailing := bytes.Repeat([]byte{byte(length)}, length)
