@@ -24,7 +24,12 @@ func TestDecrypt(t *testing.T) {
 	equal2 := "abcde.123"
 	str1 := e.Encrypt(equal1)
 	str2 := e.Encrypt(equal2)
-	assert.Equal(t, equal1, e.Decrypt(str1))
-	assert.Equal(t, equal2, e.Decrypt(str2))
-	assert.Equal(t, equal1, e.Decrypt(e.Encrypt(equal1)))
+	assert.Equal(t, equal1, d(e, str1))
+	assert.Equal(t, equal2, d(e, str2))
+	assert.Equal(t, equal1, d(e, e.Encrypt(equal1)))
+}
+
+func d(e *Encrypt, v string) string {
+	s, _ := e.Decrypt(v)
+	return *s
 }
