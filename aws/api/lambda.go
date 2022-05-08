@@ -9,9 +9,10 @@ import (
 )
 
 type AwsLambda struct {
-	svc      *lambda.Lambda
-	function string
-	result   *[]byte
+	svc        *lambda.Lambda
+	function   string
+	result     []byte
+	statusCode int64
 }
 
 func New(function string) *AwsLambda {
@@ -31,21 +32,20 @@ func (l *AwsLambda) Do(body interface{}) error {
 		Payload:      jsonBytes,
 	}
 	r, err := l.svc.Invoke(input)
-
 	if err != nil {
 		return err
 	}
-	re := []byte(r.String())
-	l.result = &re
+	l.statusCode = *r.StatusCode
+	l.result = r.Payload
 	return nil
 }
 
 func (l *AwsLambda) GetResult() *[]byte {
-	return l.result
+	return &l.result
 }
 
 func (l *AwsLambda) GetStatusCode() int {
-	return 0
+	return int(l.statusCode)
 }
 
 func (l *AwsLambda) IsCompleted() bool {
